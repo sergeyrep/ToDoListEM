@@ -1,10 +1,3 @@
-//
-//  ToDoListInteractor.swift
-//  ToDoListEM
-//
-//  Created by Сергей on 18.08.2025.
-//
-
 import Foundation
 
 final class ToDoListInteractor: TodoListInteractorProtocol {
@@ -16,7 +9,7 @@ final class ToDoListInteractor: TodoListInteractorProtocol {
     self.networkService = networkService
   }
 
-  func fetchData() async throws -> [Todo] {
+  func fetchData() async throws -> [ToDo] {
     try await networkService.fetchTodos()
   }
 }

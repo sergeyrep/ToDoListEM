@@ -1,26 +1,29 @@
-//
-//  ToDoListConfiguration.swift
-//  ToDoListEM
-//
-//  Created by Сергей on 18.08.2025.
-//
-
 import UIKit
 
-final class ToDoListConfigurator {
+final class ToDoListConfigurator: TodoListRouterProtocol {
+  
+  weak var viewController: UIViewController?
   
   func configure() -> UIViewController {
     let view = ToDoListViewController()
     let networkServise = NetworkServise()
     let interactor = ToDoListInteractor(networkService: networkServise)
+    //let router = ToDoListConfigurator()
     let presenter = ToDoListPresenter(
       view: view,
-      interactor: interactor
+      interactor: interactor,
+      //router: ToDoListConfigurator()
     )
     
     view.presenter = presenter
     interactor.presenter = presenter
+    presenter.view = view
+    //router.viewController = view
     
     return view
+  }
+  
+  func presentAddTask() {
+    
   }
 }

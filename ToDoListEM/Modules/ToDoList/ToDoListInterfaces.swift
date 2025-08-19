@@ -1,12 +1,7 @@
-//
-//  ToDoListInterfaces.swift
-//  ToDoListEM
-//
-//  Created by Сергей on 18.08.2025.
-//
 import Foundation
 
 protocol TodoListViewProtocol: AnyObject {
+  func reloadData()
 //  func show(todos: [Todo])
 //  func showLoading(_ isLoading: Bool)
 //  func showError(_ message: String)
@@ -14,7 +9,7 @@ protocol TodoListViewProtocol: AnyObject {
 
 protocol TodoListInteractorProtocol: AnyObject {
 //  func loadInitialData() async
-  func fetchData() async throws -> [Todo]
+  func fetchData() async throws -> [ToDo]
 //  func save(todo: Todo) async
 //  func delete(id: Int64) async
 //  func search(query: String) async
@@ -23,10 +18,13 @@ protocol TodoListInteractorProtocol: AnyObject {
 protocol TodoListRouterProtocol: AnyObject {
 //  func showAdd(from: TodoListViewInput)
 //  func showEdit(todo: Todo, from: TodoListViewInput)
+  func presentAddTask() 
 }
 
 protocol ToDoListPresenterProtocol: AnyObject {
+  var items: [ToDo] { get }
   func viewDidLoad()
+  func didTapAddButton()
   
 }
 

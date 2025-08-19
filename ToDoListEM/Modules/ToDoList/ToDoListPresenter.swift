@@ -1,14 +1,8 @@
-//
-//  ToDoListPresenter.swift
-//  ToDoListEM
-//
-//  Created by Сергей on 18.08.2025.
-//
-
 import Foundation
 
 final class ToDoListPresenter: ToDoListPresenterProtocol {
   
+  var items: [ToDo] = []
   weak var view: TodoListViewProtocol?
   var interactor: TodoListInteractorProtocol
   //var router: TodoListRouterProtocol
@@ -26,11 +20,16 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
   func viewDidLoad() {
     Task {
       do {
-        let items = try await interactor.fetchData()
-        print("auff")
+        let items = try await interactor.fetchData() //????
+        self.items = items
+        view?.reloadData()
       } catch {
         print(error)
       }
     }
+  }
+  
+  func didTapAddButton() {
+   // router.presentAddTask()
   }
 }

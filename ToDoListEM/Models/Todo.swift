@@ -1,6 +1,6 @@
 import Foundation
 
-struct Todo: Identifiable, Equatable {
+struct ToDo: Identifiable, Equatable {
   let id: Int
   var title: String
   var details: String?
