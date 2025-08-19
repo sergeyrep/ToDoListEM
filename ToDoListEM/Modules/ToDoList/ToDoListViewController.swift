@@ -9,12 +9,17 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     return tableView
   }()
   
+  private let searchController = UISearchController(searchResultsController: nil)
+  
+  private var filteredItems: [ToDo] = []
+  private var isSearching = false
+  
   var presenter: ToDoListPresenterProtocol?
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    
     presenter?.viewDidLoad()
+    updateSearchResults()
     setupUI()
   }
   
@@ -22,6 +27,17 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     DispatchQueue.main.async {
       self.tableView.reloadData()
     }
+  }
+  
+  private func updateSearchResults() {
+    searchController.searchResultsUpdater = self
+    searchController.obscuresBackgroundDuringPresentation = false
+    searchController.searchBar.placeholder = "Поиск"
+    searchController.searchBar.tintColor = .systemBlue
+    
+    navigationItem.searchController = searchController
+    navigationItem.hidesSearchBarWhenScrolling = false
+    definesPresentationContext = true
   }
   
   private func setupUI() {
@@ -35,14 +51,25 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     
     NSLayoutConstraint.activate([
       tableView.topAnchor.constraint(equalTo: view.topAnchor),
-      tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+      tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+      tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
       tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
     ])
   }
   
   @objc private func addButtonTapped() {
     presenter?.didTapAddButton()
+  }
+  
+  private func filterContentForSearchText(_ searchText: String) {
+    guard let items = presenter?.items else { return }
+    
+    filteredItems = items.filter { item in
+      return item.title.lowercased().contains(searchText.lowercased()) ||
+      (item.details?.lowercased().contains(searchText.lowercased()) ?? false)
+    }
+    
+    tableView.reloadData()
   }
 }
 
@@ -79,5 +106,12 @@ class ToDoCell: UITableViewCell {
     contentConfiguration = content
     
     accessoryType = task.isCompleted ? .checkmark : .none
+  }
+}
+
+extension ToDoListViewController: UISearchResultsUpdating {
+  func updateSearchResults(for searchController: UISearchController) {
+    let searchBar = searchController.searchBar
+    filterContentForSearchText(searchBar.text ?? "")
   }
 }
