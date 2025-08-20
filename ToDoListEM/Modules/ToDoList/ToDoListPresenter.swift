@@ -2,7 +2,9 @@ import Foundation
 
 final class ToDoListPresenter: ToDoListPresenterProtocol {
   
-  var items: [ToDo] = []
+  private(set) var filteredItems: [ToDo] = []
+  var isSearching: Bool = false
+  var items: [ToDo]? = []
   weak var view: TodoListViewProtocol?
   var interactor: TodoListInteractorProtocol
   //var router: TodoListRouterProtocol
@@ -20,7 +22,7 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
   func viewDidLoad() {
     Task {
       do {
-        let items = try await interactor.fetchData() //????
+        let items = try await interactor.fetchData()
         self.items = items
         view?.reloadData()
       } catch {
@@ -29,7 +31,50 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
     }
   }
   
+  func filterContentForSearchText(_ searchText: String) {
+    guard let items = items else {
+      filteredItems = []
+      view?.reloadData()
+      return
+    }
+    
+    filteredItems = items.filter { item in
+      return item.title.lowercased().contains(searchText.lowercased()) ||
+      (item.details?.lowercased().contains(searchText.lowercased()) ?? false)
+    }
+    
+    isSearching = !searchText.isEmpty
+    view?.reloadData()
+  }
+  
+  func searchDidCancel() {
+    isSearching = false
+    filteredItems = []
+    view?.reloadData()
+  }
+  
+  func toggleCompletion(for id: Int) {
+    // Находим задачу и меняем ее статус
+    if let index = items?.firstIndex(where: { $0.id == id }) {
+      items?[index].isCompleted.toggle()
+      view?.reloadData()
+      
+      // Здесь можно сохранить изменения в базу данных
+    }
+  }
+  
   func didTapAddButton() {
-   // router.presentAddTask()
+    // router.presentAddTask()
   }
 }
+
+
+//private func filterContentForSearchText(_ searchText: String) {
+//  guard let items = presenter?.items else { return }
+//
+//  filteredItems = items.filter { item in
+//    return item.title.lowercased().contains(searchText.lowercased()) ||
+//    (item.details?.lowercased().contains(searchText.lowercased()) ?? false)
+//  }
+//  tableView.reloadData()
+//}

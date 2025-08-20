@@ -22,9 +22,14 @@ protocol TodoListRouterProtocol: AnyObject {
 }
 
 protocol ToDoListPresenterProtocol: AnyObject {
-  var items: [ToDo] { get }
+  var items: [ToDo]? { get }
+  var filteredItems: [ToDo] { get }
+  var isSearching: Bool { get set }
+  func filterContentForSearchText(_ searchText: String)
+  func searchDidCancel()
   func viewDidLoad()
   func didTapAddButton()
+  func toggleCompletion(for id: Int)
   
 }
 
