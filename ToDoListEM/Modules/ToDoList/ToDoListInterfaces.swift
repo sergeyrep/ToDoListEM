@@ -2,6 +2,7 @@ import Foundation
 
 protocol TodoListViewProtocol: AnyObject {
   func reloadData()
+  func reloadRow(at index: Int)
 //  func show(todos: [Todo])
 //  func showLoading(_ isLoading: Bool)
 //  func showError(_ message: String)

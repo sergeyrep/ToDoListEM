@@ -1,7 +1,7 @@
 import UIKit
 
 class ToDoListViewController: UIViewController, TodoListViewProtocol {
-  
+ 
   private let tableView: UITableView = {
     let tableView = UITableView()
     tableView.separatorColor = .darkGray
@@ -23,6 +23,13 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
   override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
     searchController.isActive = false
+  }
+  
+  func reloadRow(at index: Int) {
+    DispatchQueue.main.async {
+      let indexPath = IndexPath(row: index, section: 0)
+      self.tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
   }
   
   func reloadData() {

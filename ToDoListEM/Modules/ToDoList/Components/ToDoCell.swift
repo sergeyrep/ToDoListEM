@@ -7,11 +7,11 @@ class ToDoCell: UITableViewCell {
   private let checkButton: UIButton = {
     let button = UIButton()
     button.translatesAutoresizingMaskIntoConstraints = false
-    button.layer.cornerRadius = 12 // Круглая форма
+    button.layer.cornerRadius = 12
     button.layer.borderWidth = 2
     button.layer.borderColor = UIColor.lightGray.cgColor
     button.backgroundColor = .clear
-    button.isUserInteractionEnabled = false // Отключаем взаимодействие, обрабатываем в ячейке
+    button.isUserInteractionEnabled = true
     return button
   }()
   
@@ -41,17 +41,23 @@ class ToDoCell: UITableViewCell {
     return dateLabel
   }()
   
-  private var isCompleted: Bool = false {
-    didSet {
-      updateCheckButtonAppearance()
-    }
-  }
+  //  private var isCompleted: Bool = false {
+  //    didSet {
+  //      updateCheckButtonAppearance()
+  //    }
+  //  }
   
+  private var currentItem: ToDo?
   var onCheckButtonTapped: (() -> Void)?
   
   override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
     setupCell()
+  }
+  
+  override func prepareForReuse() {
+    super.prepareForReuse()
+    currentItem = nil
   }
   
   required init?(coder: NSCoder) {
@@ -61,14 +67,14 @@ class ToDoCell: UITableViewCell {
   private func setupCell() {
     backgroundColor = .black
     contentView.backgroundColor = .black
+    selectionStyle = .none
     
     contentView.addSubview(checkButton)
     contentView.addSubview(titleLabel)
     contentView.addSubview(detailsLabel)
     contentView.addSubview(dateLabel)
     
-    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(checkButtonTapped))
-    checkButton.addGestureRecognizer(tapGesture)
+    checkButton.addTarget(self, action: #selector(checkButtonTapped), for: .touchUpInside)
     
     setupConstraints()
   }
@@ -81,17 +87,17 @@ class ToDoCell: UITableViewCell {
       checkButton.widthAnchor.constraint(equalToConstant: 24),
       checkButton.heightAnchor.constraint(equalToConstant: 24),
       
-      titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-      titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+      titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+      titleLabel.leadingAnchor.constraint(equalTo: checkButton.trailingAnchor, constant: 12),
       titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
       
       detailsLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-      detailsLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+      detailsLabel.leadingAnchor.constraint(equalTo: checkButton.trailingAnchor, constant: 12),
       detailsLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
       //detailsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
       
       dateLabel.topAnchor.constraint(equalTo: detailsLabel.bottomAnchor, constant: 4),
-      dateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+      dateLabel.leadingAnchor.constraint(equalTo: checkButton.trailingAnchor, constant: 12),
       dateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
       dateLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
     ])
@@ -99,7 +105,8 @@ class ToDoCell: UITableViewCell {
   
   func configure(with item: ToDo) {
     
-    titleLabel.text = item.title
+    currentItem = item
+    //titleLabel.text = item.title убрали так как дублирование в апдатечекбаттоне
     detailsLabel.text = item.details
     //dateLabel.text = item.createdAt.formatted()
     displayCurrentDate(item.createdAt)
@@ -108,22 +115,11 @@ class ToDoCell: UITableViewCell {
     detailsLabel.textColor = .lightGray
     dateLabel.textColor = .gray
     
-    isCompleted = item.isCompleted
+    
+    updateCheckButtonAppearance()
     
     // Обновляем внешний вид текста в зависимости от выполнения
-    if item.isCompleted {
-      titleLabel.textColor = .darkGray
-      detailsLabel.textColor = .darkGray
-      titleLabel.attributedText = item.title.strikeThrough()
-      if let details = item.details {
-        detailsLabel.attributedText = details.strikeThrough()
-      }
-    } else {
-      titleLabel.textColor = .white
-      detailsLabel.textColor = .lightGray
-      titleLabel.attributedText = NSAttributedString(string: item.title)
-      detailsLabel.text = item.details
-    }
+    
     
     if let details = item.details, !details.isEmpty {
       detailsLabel.text = details
@@ -144,13 +140,21 @@ class ToDoCell: UITableViewCell {
   }
   
   private func updateCheckButtonAppearance() {
-    if isCompleted {
-      // Выполнено - закрашенный кружок с галочкой
+    guard let currentItem else { return }
+    if currentItem.isCompleted == true {
+      titleLabel.textColor = .darkGray
+      detailsLabel.textColor = .darkGray
+      titleLabel.attributedText = currentItem.title.strikeThrough()
+      
       checkButton.backgroundColor = .systemBlue
       checkButton.layer.borderColor = UIColor.systemBlue.cgColor
       checkButton.setImage(UIImage(systemName: "checkmark")?.withTintColor(.white, renderingMode: .alwaysOriginal), for: .normal)
     } else {
-      // Не выполнено - пустой кружок
+      titleLabel.textColor = .white
+      detailsLabel.textColor = .lightGray
+      titleLabel.attributedText = NSAttributedString(string: currentItem.title)
+      detailsLabel.text = currentItem.details
+      
       checkButton.backgroundColor = .clear
       checkButton.layer.borderColor = UIColor.lightGray.cgColor
       checkButton.setImage(nil, for: .normal)
@@ -158,8 +162,9 @@ class ToDoCell: UITableViewCell {
   }
   
   @objc private func checkButtonTapped() {
-    isCompleted.toggle()
-    updateCheckButtonAppearance()
+    //guard var item = currentItem else { return }
+    
+    //updateCheckButtonAppearance()
     onCheckButtonTapped?() // Уведомляем о изменении
   }
 }
@@ -175,3 +180,5 @@ extension String {
     return attributeString
   }
 }
+
+

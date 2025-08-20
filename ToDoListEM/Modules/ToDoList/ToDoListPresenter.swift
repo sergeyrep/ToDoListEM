@@ -57,7 +57,7 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
     // Находим задачу и меняем ее статус
     if let index = items?.firstIndex(where: { $0.id == id }) {
       items?[index].isCompleted.toggle()
-      view?.reloadData()
+      view?.reloadRow(at: index) //новый метод, добавил ат индекс
       
       // Здесь можно сохранить изменения в базу данных
     }
