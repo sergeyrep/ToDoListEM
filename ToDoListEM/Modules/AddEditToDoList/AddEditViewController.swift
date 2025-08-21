@@ -4,19 +4,20 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
     
     private let titleLabel: UILabel = {
       let titleLable = UILabel()
-      titleLable.textColor = .black
-      titleLable.font = .systemFont(ofSize: 17, weight: .bold)
+      titleLable.textColor = .white
+      titleLable.font = .systemFont(ofSize: 34, weight: .bold)
       titleLable.textAlignment = .center
       titleLable.translatesAutoresizingMaskIntoConstraints = false
       titleLable.textAlignment = .left
+      titleLable.numberOfLines = 0
       return titleLable
     }()
   
   private let detailText: UILabel = {
     let detailText = UILabel()
-    detailText.font = .systemFont(ofSize: 15, weight: .light)
+    detailText.textColor = .white
+    detailText.font = .systemFont(ofSize: 16, weight: .light)
     detailText.translatesAutoresizingMaskIntoConstraints = false
-    detailText.textColor = .black
     detailText.numberOfLines = 0
     return detailText
   }()
@@ -24,7 +25,7 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
   private let dateLabel: UILabel = {
     let dateLabel = UILabel()
     dateLabel.textColor = .gray
-    dateLabel.font = .systemFont(ofSize: 13, weight: .light)
+    dateLabel.font = .systemFont(ofSize: 12, weight: .light)
     dateLabel.translatesAutoresizingMaskIntoConstraints = false
     dateLabel.textAlignment = .left
     return dateLabel
@@ -37,12 +38,18 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
     setupUI()
   }
   
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    navigationItem.largeTitleDisplayMode = .never
+    
+  }
+  
   func setupUI() {
-    view.backgroundColor = .white
+    view.backgroundColor = .black
     
     view.addSubview(titleLabel)
-    view.addSubview(detailText)
     view.addSubview(dateLabel)
+    view.addSubview(detailText)
     
     if let item = presenter?.item {
       titleLabel.text = item.title
@@ -50,20 +57,20 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
       displayCurrentDate(item.createdAt)
     }
       
-    navigationController?.navigationBar.prefersLargeTitles = true
-    title = "Задача"
+//    navigationController?.navigationBar.prefersLargeTitles = true
+//    title = "Задача"
     
     NSLayoutConstraint.activate([
-      titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+      titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
       titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
       titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
       //titleLabel.heightAnchor.constraint(equalToConstant: 50),
       
-      detailText.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-      detailText.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      
-      dateLabel.topAnchor.constraint(equalTo: detailText.bottomAnchor, constant: 20),
+      dateLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
       dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      
+      detailText.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 16),
+      detailText.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
     ])
   }
   

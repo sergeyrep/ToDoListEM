@@ -40,13 +40,7 @@ class ToDoCell: UITableViewCell {
     dateLabel.textAlignment = .left
     return dateLabel
   }()
-  
-  //  private var isCompleted: Bool = false {
-  //    didSet {
-  //      updateCheckButtonAppearance()
-  //    }
-  //  }
-  
+
   private var currentItem: ToDo?
   var onCheckButtonTapped: (() -> Void)?
   
@@ -108,7 +102,6 @@ class ToDoCell: UITableViewCell {
     currentItem = item
     //titleLabel.text = item.title убрали так как дублирование в апдатечекбаттоне
     detailsLabel.text = item.details
-    //dateLabel.text = item.createdAt.formatted()
     displayCurrentDate(item.createdAt)
     
     titleLabel.textColor = .white
@@ -146,9 +139,9 @@ class ToDoCell: UITableViewCell {
       detailsLabel.textColor = .darkGray
       titleLabel.attributedText = currentItem.title.strikeThrough()
       
-      checkButton.backgroundColor = .systemBlue
-      checkButton.layer.borderColor = UIColor.systemBlue.cgColor
-      checkButton.setImage(UIImage(systemName: "checkmark")?.withTintColor(.white, renderingMode: .alwaysOriginal), for: .normal)
+      checkButton.backgroundColor = .black
+      checkButton.layer.borderColor = UIColor.systemYellow.cgColor
+      checkButton.setImage(UIImage(systemName: "checkmark")?.withTintColor(.systemYellow, renderingMode: .alwaysOriginal), for: .normal)
     } else {
       titleLabel.textColor = .white
       detailsLabel.textColor = .lightGray
@@ -156,15 +149,12 @@ class ToDoCell: UITableViewCell {
       detailsLabel.text = currentItem.details
       
       checkButton.backgroundColor = .clear
-      checkButton.layer.borderColor = UIColor.lightGray.cgColor
+      checkButton.layer.borderColor = UIColor.gray.cgColor
       checkButton.setImage(nil, for: .normal)
     }
   }
   
   @objc private func checkButtonTapped() {
-    //guard var item = currentItem else { return }
-    
-    //updateCheckButtonAppearance()
     onCheckButtonTapped?() // Уведомляем о изменении
   }
 }

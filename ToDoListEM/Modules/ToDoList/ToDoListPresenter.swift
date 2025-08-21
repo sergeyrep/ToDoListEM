@@ -54,7 +54,6 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
   }
   
   func toggleCompletion(for id: Int) {
-    // Находим задачу и меняем ее статус
     if let index = items?.firstIndex(where: { $0.id == id }) {
       items?[index].isCompleted.toggle()
       view?.reloadRow(at: index) //новый метод, добавил ат индекс

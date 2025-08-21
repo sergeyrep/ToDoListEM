@@ -67,8 +67,24 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
   private func setupUI() {
     view.backgroundColor = .black
     
+    navigationItem.backButtonTitle = "Назад"
+    let appearance = UINavigationBarAppearance()
+    appearance.configureWithOpaqueBackground()
+    appearance.backgroundColor = .black
+    appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+    
+    let backButtonAppearance = UIBarButtonItemAppearance()
+    backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.systemYellow]
+    //backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 0)
+    appearance.backButtonAppearance = backButtonAppearance
+    //UINavigationBar.appearance().tintColor = .systemYellow
+    
+    navigationController?.navigationBar.standardAppearance = appearance
+    //navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    
     navigationController?.navigationBar.prefersLargeTitles = true
-    navigationController?.navigationBar.tintColor = .white
+    navigationController?.navigationBar.tintColor = .systemYellow
     navigationController?.navigationBar.barTintColor = .black
     navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
     navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
@@ -127,7 +143,6 @@ extension ToDoListViewController: UITableViewDataSource, UITableViewDelegate {
     let configurator = AddEditConfigurator()
     let detailView = configurator.configure(with: item)
     navigationController?.pushViewController(detailView, animated: true)
-    print("aufff")
   }
 }
 
