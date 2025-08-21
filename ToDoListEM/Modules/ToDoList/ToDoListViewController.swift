@@ -1,110 +1,33 @@
 import UIKit
-import CoreData
 
-class ToDoListViewController: UIViewController, TodoListViewProtocol {
+final class ToDoListViewController: UIViewController, ToDoListViewProtocol {
   
-  private lazy var addButton = UIBarButtonItem(
-    barButtonSystemItem: .add,
-    target: self,
-    action: #selector(addButtonTapped)
-  )
-
-  private let tableView: UITableView = {
-    let tableView = UITableView()
-    tableView.separatorColor = .darkGray
-    tableView.translatesAutoresizingMaskIntoConstraints = false
-    return tableView
-  }()
+  var output: ToDoListViewProtocol?
   
+  private var data: [ToDo] = []
+  private let tableView = UITableView(frame: .zero, style: .plain)
   private let searchController = UISearchController(searchResultsController: nil)
-  
-  var presenter: ToDoListPresenterProtocol?
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    setupUI()
-    updateSearchResults()
-    presenter?.viewDidLoad()
-  }
-  
-  override func viewDidDisappear(_ animated: Bool) {
-    super.viewDidDisappear(animated)
-    searchController.isActive = false
-  }
-  
-  func reloadRow(at index: Int) {
-    DispatchQueue.main.async {
-      let indexPath = IndexPath(row: index, section: 0)
-      self.tableView.reloadRows(at: [indexPath], with: .automatic)
-    }
-  }
-  
-  func reloadData() {
-    DispatchQueue.main.async {
-      self.tableView.reloadData()
-    }
-  }
-  
-  private func updateSearchResults() {
-    searchController.searchResultsUpdater = self
-    searchController.obscuresBackgroundDuringPresentation = false
-    searchController.searchBar.placeholder = "Поиск"
-    searchController.searchBar.tintColor = .systemBlue
-    //searchController.searchBar.delegate = self
-    
-    searchController.searchBar.barTintColor = .black
-    searchController.searchBar.backgroundColor = .black
-    
-    if let textField = searchController.searchBar.value(forKey: "searchField") as? UITextField {
-      textField.textColor = .white
-      textField.backgroundColor = .darkGray
-      textField.attributedPlaceholder = NSAttributedString(
-        string: "Поиск",
-        attributes: [.foregroundColor: UIColor.lightGray]
-      )
-    }
-    
-    searchController.searchBar.delegate = self
-    
-    navigationItem.searchController = searchController
-    navigationItem.hidesSearchBarWhenScrolling = false
-    definesPresentationContext = true
-  }
-  
-  private func setupUI() {
+    title = "Задачи"
     view.backgroundColor = .black
     
-    navigationItem.backButtonTitle = "Назад"
-    let appearance = UINavigationBarAppearance()
-    appearance.configureWithOpaqueBackground()
-    appearance.backgroundColor = .black
-    appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+    setupTable()
+    setupSearch()
+    setupNavBar()
     
-    let backButtonAppearance = UIBarButtonItemAppearance()
-    backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.systemYellow]
-    appearance.backButtonAppearance = backButtonAppearance
-    
-    navigationController?.navigationBar.standardAppearance = appearance
-    //navigationController?.navigationBar.scrollEdgeAppearance = appearance
-    
-    navigationController?.navigationBar.prefersLargeTitles = true
-    navigationController?.navigationBar.tintColor = .systemYellow
-    navigationController?.navigationBar.barTintColor = .black
-    navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
-    navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-    
-    title = "Задачи"
-    view.addSubview(tableView)
-    
-    navigationItem.rightBarButtonItem = addButton
-    
+    output?.viewDidLoad()
+  }
+  
+  private func setupTable() {
+    tableView.translatesAutoresizingMaskIntoConstraints = false
     tableView.backgroundColor = .black
     tableView.separatorColor = .darkGray
-    
     tableView.register(ToDoCell.self, forCellReuseIdentifier: ToDoCell.indentifier)
     tableView.dataSource = self
     tableView.delegate = self
+    view.addSubview(tableView)
     
     NSLayoutConstraint.activate([
       tableView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -114,70 +37,83 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     ])
   }
   
-//  @objc private func addButtonTapped() {
-//    presenter?.didTapAddButton()
-//  }
-  
-  @objc private func addButtonTapped() {
-    let addVC = AddEditViewController()
-    navigationController?.pushViewController(addVC, animated: true)
+  private func setupSearch() {
+    searchController.searchResultsUpdater = self
+    searchController.obscuresBackgroundDuringPresentation = false
+    searchController.searchBar.placeholder = "Поиск"
+    searchController.searchBar.tintColor = .systemYellow
+    if let tf = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+      tf.textColor = .white
+      tf.backgroundColor = .darkGray
+      tf.attributedPlaceholder = NSAttributedString(
+        string: "Поиск",
+        attributes: [.foregroundColor: UIColor.lightGray]
+      )
+    }
+    navigationItem.searchController = searchController
+    navigationItem.hidesSearchBarWhenScrolling = false
+    definesPresentationContext = true
   }
   
-  private func filterContentForSearchText(_ searchText: String) {
-    presenter?.filterContentForSearchText(searchText)
+  private func setupNavBar() {
+    let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
+    navigationItem.rightBarButtonItem = addButton
+    
+    let appearance = UINavigationBarAppearance()
+    appearance.configureWithOpaqueBackground()
+    appearance.backgroundColor = .black
+    appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+    navigationController?.navigationBar.standardAppearance = appearance
+    navigationController?.navigationBar.prefersLargeTitles = true
+    navigationController?.navigationBar.tintColor = .systemYellow
   }
+  
+  @objc private func addTapped() {
+    output?.didTapAdd()
+  }
+  
+  func show(todos: [ToDo]) {
+    self.data = todos
+    tableView.reloadData()
+  }
+  
+  func reloadRow(at index: Int) {
+    guard index < data.count else { return }
+    tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+  }
+  
+  func didTapAdd() {}
+  
+  func didSelectRow(at index: Int) {}
+  
+  func didToggleDone(at index: Int) {}
+  
+  func didSearch(text: String) {}
 }
 
 extension ToDoListViewController: UITableViewDataSource, UITableViewDelegate {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    guard let presenter = presenter else { return 0 }
-    return presenter.isSearching ? presenter.filteredItems.count : presenter.items?.count ?? 0
+    data.count
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: ToDoCell.indentifier, for: indexPath) as! ToDoCell
-    guard let presenter = presenter else { return cell }
-    
-    let item = presenter.isSearching ? presenter.filteredItems[indexPath.row] : presenter.items?[indexPath.row]
-    
-    guard let item = item else { return UITableViewCell() } //можно оставить cell
+    let item = data[indexPath.row]
     cell.configure(with: item)
-    
     cell.onCheckButtonTapped = { [weak self] in
-      self?.presenter?.toggleCompletion(for: item.id)
+      self?.output?.didToggleDone(at: indexPath.row)
     }
-    
     return cell
   }
   
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    guard let item = presenter?.items?[indexPath.row] else { return }
-    let configurator = AddEditConfigurator()
-    let detailView = configurator.configure(with: item)
-    navigationController?.pushViewController(detailView, animated: true)
+    output?.didSelectRow(at: indexPath.row)
   }
 }
 
 extension ToDoListViewController: UISearchResultsUpdating {
   func updateSearchResults(for searchController: UISearchController) {
-    let searchBar = searchController.searchBar
-    filterContentForSearchText(searchBar.text ?? "")
+    output?.didSearch(text: searchController.searchBar.text ?? "")
   }
 }
-
-extension ToDoListViewController: UISearchBarDelegate {
-  func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-  }
-  
-  func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-    presenter?.searchDidCancel()
-  }
-  
-  func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-    filterContentForSearchText(searchText)
-  }
-}
-
-
-
-

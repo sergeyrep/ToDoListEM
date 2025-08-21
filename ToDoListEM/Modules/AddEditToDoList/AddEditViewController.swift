@@ -1,147 +1,94 @@
 import UIKit
 
-final class AddEditViewController: UIViewController, AddEditViewControllerProtocol {
-  
-  private let titleLabel: UILabel = {
-    let titleLable = UILabel()
-    titleLable.textColor = .white
-    titleLable.font = .systemFont(ofSize: 34, weight: .bold)
-    titleLable.textAlignment = .center
-    titleLable.translatesAutoresizingMaskIntoConstraints = false
-    titleLable.textAlignment = .left
-    titleLable.numberOfLines = 0
-    return titleLable
+final class AddEditViewController: UIViewController, AddEditViewInput {
+  var output: AddEditViewOutput!
+
+  private let titleField: UITextField = {
+    let tf = UITextField()
+    tf.translatesAutoresizingMaskIntoConstraints = false
+    tf.textColor = .white
+    tf.backgroundColor = UIColor.darkGray.withAlphaComponent(0.3)
+    tf.layer.cornerRadius = 8
+    tf.layer.masksToBounds = true
+    tf.borderStyle = .none
+    tf.placeholder = "Название задачи"
+    tf.setContentHuggingPriority(.defaultHigh, for: .vertical)
+    tf.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+    tf.leftViewMode = .always
+    return tf
   }()
-  
-  private let detailText: UILabel = {
-    let detailText = UILabel()
-    detailText.textColor = .white
-    detailText.font = .systemFont(ofSize: 16, weight: .light)
-    detailText.translatesAutoresizingMaskIntoConstraints = false
-    detailText.numberOfLines = 0
-    return detailText
+
+  private let detailsView: UITextView = {
+    let tv = UITextView()
+    tv.translatesAutoresizingMaskIntoConstraints = false
+    tv.textColor = .white
+    tv.backgroundColor = UIColor.darkGray.withAlphaComponent(0.2)
+    tv.layer.cornerRadius = 12
+    tv.isScrollEnabled = true
+    tv.font = .systemFont(ofSize: 16)
+    return tv
   }()
-  
-  private let dateLabel: UILabel = {
-    let dateLabel = UILabel()
-    dateLabel.textColor = .gray
-    dateLabel.font = .systemFont(ofSize: 12, weight: .light)
-    dateLabel.translatesAutoresizingMaskIntoConstraints = false
-    dateLabel.textAlignment = .left
-    return dateLabel
-  }()
-  
-  var todoItem: CDTodo?
-  private let titleField = UITextField()
-  private let detailsField = UITextView()
-  private let saveButton = UIButton(type: .system)
-  
-  var presenter: AddEditPresenterProtocol?
-  
+
   override func viewDidLoad() {
     super.viewDidLoad()
-    setupUI()
-  }
-  
-  override func viewWillAppear(_ animated: Bool) {
-    super.viewWillAppear(animated)
-    navigationItem.largeTitleDisplayMode = .never
-    
-  }
-  
-  private func configureForEdit() {
-    if let todoItem = todoItem {
-      title = "Редактировать задачу"
-      titleField.text = todoItem.title
-      detailsField.text = todoItem.details
-    } else {
-      title = "Новая задача"
-    }
-  }
-  
-  func setupUI() {
     view.backgroundColor = .black
-    
-    view.addSubview(titleLabel)
-    view.addSubview(dateLabel)
-    view.addSubview(detailText)
-    
-    if let item = presenter?.item {
-      titleLabel.text = item.title
-      detailText.text = item.details ?? "No details"
-      displayCurrentDate(item.createdAt)
-    }
-    
+    title = "Задача"
+
+    setupLayout()
+    setupNavBar()
+    output.viewDidLoad()
+  }
+
+  private func setupLayout() {
+    view.addSubview(titleField)
+    view.addSubview(detailsView)
+
     NSLayoutConstraint.activate([
-      titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-      titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-      //titleLabel.heightAnchor.constraint(equalToConstant: 50),
-      
-      dateLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-      dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      
-      detailText.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 16),
-      detailText.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      titleField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+      titleField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      titleField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+      titleField.heightAnchor.constraint(equalToConstant: 44),
+
+      detailsView.topAnchor.constraint(equalTo: titleField.bottomAnchor, constant: 12),
+      detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+      detailsView.heightAnchor.constraint(equalToConstant: 220)
     ])
   }
-  
-  private func displayCurrentDate(_ date: Date) {
-    
-    let formatter = DateFormatter()
-    formatter.dateStyle = .medium
-    formatter.timeStyle = .short
-    formatter.locale = Locale(identifier: "ru_RU")
-    dateLabel.text = formatter.string(from: date)
+
+  private func setupNavBar() {
+    navigationItem.rightBarButtonItem = UIBarButtonItem(
+      barButtonSystemItem: .save,
+      target: self,
+      action: #selector(saveTapped)
+    )
   }
-  
+
   @objc private func saveTapped() {
-    guard let titleText = titleField.text, !titleText.isEmpty else { return }
-    
-    if let todoItem = todoItem {
-      todoItem.title = titleText
-      todoItem.details = detailsField.text
-      todoItem.createdAt = todoItem.createdAt
-    } else {
-      let newTodo = CDTodo(context: CoreDataManager.shared.context)
-      newTodo.id = Int64(Date().timeIntervalSince1970)
-      newTodo.title = titleText
-      newTodo.details = detailsField.text
-      newTodo.createdAt = Date()
-      newTodo.isCompleted = false
+    guard let title = titleField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+          !title.isEmpty else {
+      let alert = UIAlertController(title: "Введите название", message: nil, preferredStyle: .alert)
+      alert.addAction(UIAlertAction(title: "OK", style: .default))
+      present(alert, animated: true)
+      return
     }
-    
-    CoreDataManager.shared.save()
+    output.save(title: title, details: detailsView.text?.trimmingCharacters(in: .whitespacesAndNewlines))
+  }
+
+  // MARK: - AddEditViewInput
+
+  func fill(with todo: ToDo?) {
+    if let todo {
+      title = "Редактирование"
+      titleField.text = todo.title
+      detailsView.text = todo.details
+    } else {
+      title = "Новая задача"
+      detailsView.text = ""
+    }
+  }
+
+  func close() {
     navigationController?.popViewController(animated: true)
   }
 }
-
-
-//  private func setupNavigationBar() {
-//      // Кнопка сохранения
-//      let saveButton = UIBarButtonItem(
-//        barButtonSystemItem: .save,
-//        target: self,
-//        action: #selector(saveButtonTapped)
-//      )
-//
-//      // Кнопка отмены
-//      let cancelButton = UIBarButtonItem(
-//        barButtonSystemItem: .cancel,
-//        target: self,
-//        action: #selector(cancelButtonTapped)
-//      )
-//
-//      navigationItem.rightBarButtonItem = saveButton
-//      navigationItem.leftBarButtonItem = cancelButton
-//    }
-//
-//    @objc private func saveButtonTapped() {
-//      // Сохранение задачи
-//      presenter?.saveTask()
-//    }
-//
-//  @objc private func cancelButtonTapped() {
-//      // Закрытие экрана
-//      dismiss(animated: true)
-//    }

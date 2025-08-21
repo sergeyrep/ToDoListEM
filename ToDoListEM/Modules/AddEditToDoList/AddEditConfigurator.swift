@@ -1,26 +1,20 @@
 import UIKit
 
-final class AddEditConfigurator: AddEditConfiguratorProtocol {
-  
-  
-  
-  func configure(with todo: ToDo) -> UIViewController {
+final class AddEditRouter: AddEditRouterInput {
+
+  static func build(todo: ToDo?,
+                    output: AddEditModuleOutput?) -> UIViewController {
     let view = AddEditViewController()
-    let networkServise = NetworkServise()
-    let interactor = AAddEditInteractor(networkServise: networkServise)
+    let interactor = AddEditInteractor(existing: todo)
+    let router = AddEditRouter()
     let presenter = AddEditPresenter(
       view: view,
-      item: todo,
-      interactor: interactor
+      interactor: interactor,
+      router: router,
+      output: output,
+      editingTodo: todo
     )
-        
-    view.presenter = presenter
-    presenter.view = view
-    presenter.interactor = interactor
-    interactor.presenter = presenter
-    
-      
+    view.output = presenter
     return view
   }
 }
-

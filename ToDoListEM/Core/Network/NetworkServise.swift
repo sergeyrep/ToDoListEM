@@ -21,7 +21,7 @@ final class NetworkServise: NetworkServiseProtocol {
       let now = Date()
       return decoded.todos.map {
         ToDo(
-          id: $0.id,
+          id: Int64($0.id),
           title: $0.todo,
           details: nil,
           createdAt: Date(),
@@ -44,7 +44,7 @@ final class NetworkServise: NetworkServiseProtocol {
       let decoded = try decoder.decode(TodoDTO.self, from: data)
       let now = Date()
       return ToDo(
-          id: decoded.id,
+        id: Int64(decoded.id),
           title: decoded.todo,
           details: nil,
           createdAt: now,

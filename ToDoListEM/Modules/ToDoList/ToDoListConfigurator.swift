@@ -1,29 +1,17 @@
 import UIKit
 
-final class ToDoListConfigurator: TodoListRouterProtocol {
-  
-  weak var viewController: UIViewController?
-  
-  func configure() -> UIViewController {
+final class ToDoListRouter: ToDoListRouterProtocol {
+  static func createModule() -> UIViewController {
     let view = ToDoListViewController()
-    let networkServise = NetworkServise()
-    let interactor = ToDoListInteractor(networkService: networkServise)
-    //let router = ToDoListConfigurator()
-    let presenter = ToDoListPresenter(
-      view: view,
-      interactor: interactor,
-      //router: ToDoListConfigurator()
-    )
-    
-    view.presenter = presenter
-    interactor.presenter = presenter
-    presenter.view = view
-    //router.viewController = view
-    
+    let interactor = ToDoListInteractor()
+    let router = ToDoListRouter()
+    let presenter = ToDoListPresenter(view: view, interactor: interactor, router: router)
+    view.output = presenter
     return view
   }
-  
-  func presentAddTask() {
-    
+
+  func openAddEdit(from view: UIViewController, todo: ToDo?, output: AddEditModuleOutput?) {
+    let addEditVC = AddEditRouter.build(todo: todo, output: output)
+    view.navigationController?.pushViewController(addEditVC, animated: true)
   }
 }

@@ -1,15 +1,33 @@
 import Foundation
+import CoreData
 
-final class ToDoListInteractor: TodoListInteractorProtocol {
+final class ToDoListInteractor: ToDoListInteractorProtocol {
+  // Только CoreData в этом примере
+  private let core = CoreDataManager.shared
   
-  weak var presenter: ToDoListPresenterProtocol?
-  private let networkService: NetworkServiseProtocol
-  
-  init(networkService: NetworkServiseProtocol) {
-    self.networkService = networkService
+  func fetchTodos() -> [ToDo] {
+    let request: NSFetchRequest<CDTodo> = CDTodo.fetchRequest()
+    request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+    do {
+      let result = try core.context.fetch(request)
+      return result.compactMap(ToDo.init(cd:))
+    } catch {
+      print("Fetch error: \(error)")
+      return []
+    }
   }
-
-  func fetchData() async throws -> [ToDo] {
-    try await networkService.fetchTodos()
+  
+  func toggleDone(id: Int64) {
+    let request: NSFetchRequest<CDTodo> = CDTodo.fetchRequest()
+    request.predicate = NSPredicate(format: "id == %lld", id)
+    request.fetchLimit = 1
+    do {
+      if let cd = try core.context.fetch(request).first {
+        cd.isCompleted.toggle()
+        core.saveContext()
+      }
+    } catch {
+      print("Toggle error: \(error)")
+    }
   }
 }

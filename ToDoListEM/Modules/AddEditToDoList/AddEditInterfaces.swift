@@ -1,19 +1,26 @@
 import Foundation
+import UIKit
 
-protocol AddEditConfiguratorProtocol: AnyObject {
-  
+// MARK: - View
+protocol AddEditViewInput: AnyObject {
+  func fill(with todo: ToDo?)
+  func close()
 }
 
-protocol AddEditPresenterProtocol: AnyObject {
-  var item: ToDo { get }
-  func saveTask()
+protocol AddEditViewOutput: AnyObject {
+  func viewDidLoad()
+  func save(title: String, details: String?)
 }
 
-protocol AddEditInteractorProtocol: AnyObject {
-  func fetchDataOne() async throws -> ToDo
-  
+// MARK: - Interactor
+protocol AddEditInteractorInput: AnyObject {
+  func saveNew(title: String, details: String?)
+  func updateExisting(_ todo: ToDo, title: String, details: String?)
+  func fetchAll() -> [ToDo]
 }
 
-protocol AddEditViewControllerProtocol: AnyObject {
-  
+protocol AddEditRouterInput: AnyObject { }
+
+protocol AddEditModuleOutput: AnyObject {
+  func addEditDidFinish(_ updatedList: [ToDo])
 }
