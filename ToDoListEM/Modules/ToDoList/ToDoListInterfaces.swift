@@ -11,6 +11,7 @@ protocol TodoListViewProtocol: AnyObject {
 protocol TodoListInteractorProtocol: AnyObject {
 //  func loadInitialData() async
   func fetchData() async throws -> [ToDo]
+  
 //  func save(todo: Todo) async
 //  func delete(id: Int64) async
 //  func search(query: String) async

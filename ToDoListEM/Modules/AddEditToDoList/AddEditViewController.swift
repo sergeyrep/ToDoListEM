@@ -1,17 +1,17 @@
 import UIKit
 
 final class AddEditViewController: UIViewController, AddEditViewControllerProtocol {
-    
-    private let titleLabel: UILabel = {
-      let titleLable = UILabel()
-      titleLable.textColor = .white
-      titleLable.font = .systemFont(ofSize: 34, weight: .bold)
-      titleLable.textAlignment = .center
-      titleLable.translatesAutoresizingMaskIntoConstraints = false
-      titleLable.textAlignment = .left
-      titleLable.numberOfLines = 0
-      return titleLable
-    }()
+  
+  private let titleLabel: UILabel = {
+    let titleLable = UILabel()
+    titleLable.textColor = .white
+    titleLable.font = .systemFont(ofSize: 34, weight: .bold)
+    titleLable.textAlignment = .center
+    titleLable.translatesAutoresizingMaskIntoConstraints = false
+    titleLable.textAlignment = .left
+    titleLable.numberOfLines = 0
+    return titleLable
+  }()
   
   private let detailText: UILabel = {
     let detailText = UILabel()
@@ -31,6 +31,11 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
     return dateLabel
   }()
   
+  var todoItem: CDTodo?
+  private let titleField = UITextField()
+  private let detailsField = UITextView()
+  private let saveButton = UIButton(type: .system)
+  
   var presenter: AddEditPresenterProtocol?
   
   override func viewDidLoad() {
@@ -42,6 +47,16 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
     super.viewWillAppear(animated)
     navigationItem.largeTitleDisplayMode = .never
     
+  }
+  
+  private func configureForEdit() {
+    if let todoItem = todoItem {
+      title = "Редактировать задачу"
+      titleField.text = todoItem.title
+      detailsField.text = todoItem.details
+    } else {
+      title = "Новая задача"
+    }
   }
   
   func setupUI() {
@@ -56,9 +71,6 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
       detailText.text = item.details ?? "No details"
       displayCurrentDate(item.createdAt)
     }
-      
-//    navigationController?.navigationBar.prefersLargeTitles = true
-//    title = "Задача"
     
     NSLayoutConstraint.activate([
       titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
@@ -81,6 +93,26 @@ final class AddEditViewController: UIViewController, AddEditViewControllerProtoc
     formatter.timeStyle = .short
     formatter.locale = Locale(identifier: "ru_RU")
     dateLabel.text = formatter.string(from: date)
+  }
+  
+  @objc private func saveTapped() {
+    guard let titleText = titleField.text, !titleText.isEmpty else { return }
+    
+    if let todoItem = todoItem {
+      todoItem.title = titleText
+      todoItem.details = detailsField.text
+      todoItem.createdAt = todoItem.createdAt
+    } else {
+      let newTodo = CDTodo(context: CoreDataManager.shared.context)
+      newTodo.id = Int64(Date().timeIntervalSince1970)
+      newTodo.title = titleText
+      newTodo.details = detailsField.text
+      newTodo.createdAt = Date()
+      newTodo.isCompleted = false
+    }
+    
+    CoreDataManager.shared.save()
+    navigationController?.popViewController(animated: true)
   }
 }
 

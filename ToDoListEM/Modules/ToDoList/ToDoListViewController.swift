@@ -1,7 +1,14 @@
 import UIKit
+import CoreData
 
 class ToDoListViewController: UIViewController, TodoListViewProtocol {
- 
+  
+  private lazy var addButton = UIBarButtonItem(
+    barButtonSystemItem: .add,
+    target: self,
+    action: #selector(addButtonTapped)
+  )
+
   private let tableView: UITableView = {
     let tableView = UITableView()
     tableView.separatorColor = .darkGray
@@ -43,7 +50,7 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     searchController.obscuresBackgroundDuringPresentation = false
     searchController.searchBar.placeholder = "Поиск"
     searchController.searchBar.tintColor = .systemBlue
-    searchController.searchBar.delegate = self
+    //searchController.searchBar.delegate = self
     
     searchController.searchBar.barTintColor = .black
     searchController.searchBar.backgroundColor = .black
@@ -76,9 +83,7 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     
     let backButtonAppearance = UIBarButtonItemAppearance()
     backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.systemYellow]
-    //backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 0)
     appearance.backButtonAppearance = backButtonAppearance
-    //UINavigationBar.appearance().tintColor = .systemYellow
     
     navigationController?.navigationBar.standardAppearance = appearance
     //navigationController?.navigationBar.scrollEdgeAppearance = appearance
@@ -91,6 +96,8 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     
     title = "Задачи"
     view.addSubview(tableView)
+    
+    navigationItem.rightBarButtonItem = addButton
     
     tableView.backgroundColor = .black
     tableView.separatorColor = .darkGray
@@ -107,8 +114,13 @@ class ToDoListViewController: UIViewController, TodoListViewProtocol {
     ])
   }
   
+//  @objc private func addButtonTapped() {
+//    presenter?.didTapAddButton()
+//  }
+  
   @objc private func addButtonTapped() {
-    presenter?.didTapAddButton()
+    let addVC = AddEditViewController()
+    navigationController?.pushViewController(addVC, animated: true)
   }
   
   private func filterContentForSearchText(_ searchText: String) {
@@ -128,7 +140,7 @@ extension ToDoListViewController: UITableViewDataSource, UITableViewDelegate {
     
     let item = presenter.isSearching ? presenter.filteredItems[indexPath.row] : presenter.items?[indexPath.row]
     
-    guard let item = item else { return cell }
+    guard let item = item else { return UITableViewCell() } //можно оставить cell
     cell.configure(with: item)
     
     cell.onCheckButtonTapped = { [weak self] in

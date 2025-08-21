@@ -2,7 +2,7 @@ import UIKit
 
 final class AddEditConfigurator: AddEditConfiguratorProtocol {
   
-  //weak var viewController: UIViewController?
+  
   
   func configure(with todo: ToDo) -> UIViewController {
     let view = AddEditViewController()
